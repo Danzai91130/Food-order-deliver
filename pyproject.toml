@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "food-order-deliver"
+version = "0.0.1"
+description = "App de prise commande de sandwich pour les fidèles de l'église jeevapathai, et aide a la préparation des commandes"
+authors = ["Wilfried PONNOU"]
+license = "Jeevapathai®"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.8"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+
+[tool.pytest.ini_options]
+pythonpath = [
+  ".", "src",
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
