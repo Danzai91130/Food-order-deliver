@@ -7,7 +7,8 @@ license = "Jeevapathai®"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.8"
+python = ">=3.8,<3.9.7 || >3.9.7"
+streamlit = "^1.30.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

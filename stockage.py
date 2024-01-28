@@ -19,6 +19,7 @@ def creer_tables(conn):
                         proteine TEXT,
                         sauces TEXT,
                         ingredients TEXT,
+                        preparee INTEGER DEFAULT 0,
                         FOREIGN KEY (id_client) REFERENCES clients (id)
                     )''')
     conn.commit()
@@ -28,6 +29,9 @@ def inserer_client(conn, nom, email):
     cursor = conn.cursor()
     cursor.execute("INSERT INTO clients (nom, email) VALUES (?, ?)", (nom, email))
     conn.commit()
+    # Récupère l'ID du client nouvellement inséré
+    id_client = cursor.lastrowid
+    return id_client
 
 def inserer_commande_sandwich(conn, id_client, nom_sandwich, proteine, sauces, ingredients):
     """Insère une commande de sandwich dans la base de données."""
@@ -35,6 +39,14 @@ def inserer_commande_sandwich(conn, id_client, nom_sandwich, proteine, sauces, i
     cursor.execute("INSERT INTO commandes_sandwichs (id_client, nom_sandwich, proteine, sauces, ingredients) VALUES (?, ?, ?, ?, ?)",
                    (id_client, nom_sandwich, proteine, sauces, ingredients))
     conn.commit()
+
+def marquer_commande_preparee(conn, id_commande):
+    """Marque une commande comme préparée dans la base de données."""
+
+    cursor = conn.cursor()
+    cursor.execute("UPDATE commandes_sandwichs SET preparee = 1 WHERE id = ?", (id_commande,))
+    conn.commit()
+    conn.close()
 
 # Code de test pour vérifier le bon fonctionnement des fonctions
 if __name__ == "__main__":
