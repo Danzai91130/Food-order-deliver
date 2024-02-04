@@ -1,65 +1,58 @@
-# Import des classes et des fonctions nécessaires
-from stockage import creer_tables, inserer_client, inserer_commande_sandwich, creer_connexion
-from src.classes.client import Client
-from src.classes.sandwich import Sandwich
-from src.classes.commande import Commande
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
 
+# Check if Firebase app is already initialized
+if not firebase_admin._apps:
+    cred = credentials.Certificate("secrets/order-page-c92f2-firebase-adminsdk-e270q-2bea0532f9.json")
+    firebase_admin.initialize_app(cred)
+
+db = firestore.client()
 # Fonction pour enregistrer un nouveau client
 def enregistrer_nouveau_client(nom, email):
-    inserer_client(nom, email)
+    db.collection('clients').add({
+        'nom': nom,
+        'email': email
+    })
 
 # Fonction pour passer une nouvelle commande
 def passer_nouvelle_commande(nom_client, email_client, nom_sandwich, proteine, sauces, ingredients):
-    conn = creer_connexion()
-    client = Client(nom_client, email_client)
-    sandwich = Sandwich(nom_sandwich, proteine, sauces, ingredients)
-    commande = Commande(client, sandwich)
-    inserer_commande_sandwich(conn, client.id, sandwich.nom, sandwich.proteine, sandwich.sauces, sandwich.ingredients)
-    conn.close()
-    return commande
+    client_ref = db.collection('clients').add({
+        'nom': nom_client,
+        'email': email_client
+    })
+    client_id = client_ref.id
+
+    commande_ref = db.collection('commandes_sandwichs').add({
+        'id_client': client_id,
+        'nom_sandwich': nom_sandwich,
+        'proteine': proteine,
+        'sauces': sauces,
+        'ingredients': ingredients,
+        'preparee': False
+    })
+
+    commande_id = commande_ref.id
+    return commande_id
 
 # Fonction pour récupérer les détails d'une commande depuis la base de données
-def recuperer_details_commande(non_prepares_seulement=False):
-    conn = creer_connexion()
-    cursor = conn.cursor()
+def recuperer_details_commande(db,non_prepares_seulement=False):
+    query = db.collection('commandes_sandwichs').where('preparee', '==', False).limit(1) if non_prepares_seulement else db.collection('commandes_sandwichs').limit(1)
+    commandes = query.get()
 
-    # Requête SQL pour récupérer les détails de la première commande non préparée
-    if non_prepares_seulement:
-        cursor.execute("""SELECT cs.id, c.nom, c.email, cs.nom_sandwich, cs.proteine, cs.sauces, cs.ingredients
-                          FROM commandes_sandwichs AS cs
-                          JOIN clients AS c ON cs.id_client = c.id
-                          WHERE cs.preparee = 0
-                          ORDER BY cs.id
-                          LIMIT 1""")
-    else:
-        cursor.execute("""SELECT cs.id, c.nom, c.email, cs.nom_sandwich, cs.proteine, cs.sauces, cs.ingredients
-                          FROM commandes_sandwichs AS cs
-                          JOIN clients AS c ON cs.id_client = c.id
-                          ORDER BY cs.id
-                          LIMIT 1""")
-
-    # Récupération de la première commande trouvée
-    commande = cursor.fetchone()
-
-    # Fermeture de la connexion à la base de données
-    conn.close()
-
-    # Si une commande a été trouvée, retourne ses détails
-    if commande:
-        # Convertit les détails de la commande en un objet ou une structure de données appropriée
-        details_commande = {
-            "id": commande[0],
-            "nom_client": commande[1],
-            "email_client": commande[2],
-            "nom_sandwich": commande[3],
-            "proteine": commande[4],
-            "sauces": commande[5],
-            "ingredients": commande[6]
+    for commande in commandes:
+        commande_data = commande.to_dict()
+        client_ref = db.collection('clients').document(commande_data['id_client'])
+        client_data = client_ref.get().to_dict()
+        
+        return {
+            'id': commande.id,
+            'nom_client': client_data['nom'],
+            'email_client': client_data['email'],
+            'nom_sandwich': commande_data['nom_sandwich'],
+            'proteine': commande_data['proteine'],
+            'sauces': commande_data['sauces'],
+            'ingredients': commande_data['ingredients']
         }
-        return details_commande
-    else:
-        return None
 
-
-
-# Autres fonctions nécessaires...
+    return None

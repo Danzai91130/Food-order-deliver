@@ -1,63 +1,73 @@
 import hashlib
 import streamlit as st
-import os
-from src.classes.commande import  Commande
+from src.classes.commande import Commande
 from src.classes.client import Client
 from src.classes.sandwich import Sandwich
 from src.utils import envoyer_email
-from stockage import creer_connexion, inserer_commande_sandwich, inserer_client
-# Variable pour stocker le mot de passe administrateur
-MOT_DE_PASSE_ADMIN = "mot_de_passe_securise"
+from stockage import inserer_commande_sandwich, inserer_client
 
-# Fonction d'authentification
-def authentification():
-    mdp_key = hashlib.md5("mdp".encode()).hexdigest()
-    # Champ de saisie pour le mot de passe
-    mot_de_passe = st.text_input("Mot de passe", type="password", key = mdp_key)
 
-    # Vérifie si le mot de passe est correct
-    if mot_de_passe == MOT_DE_PASSE_ADMIN:
-        return True
-    else:
-        return False
-    
+# Initialize variables
+success = False
+def no_more_to_show(client):
+    # Centered text
+    st.write(f"<h1 style='text-align: center;'>\
+             Commande passée avec succès ! {client.nom} \
+             L'équipe du pôle service de Jeevapathai te \
+             remercie pour ta commande. Tu vas recevoir un email à l'adresse suivante: {client.email} </h1>", unsafe_allow_html=True)
+
+    # Centered GIF
+    col1, col2, col3 = st.columns([1, 3, 1])  # Adjust column widths as needed
+    with col1:
+        st.write("")  # Add space for better centering
+    with col2:
+        st.image("data/gifs/bien-joue.gif", use_column_width=True)
+    with col3:
+        st.write("")  # Add space for better centering
+
+    # Clear session state to remove content from commande_sandwich function
+    st.session_state.clear()
+
 # Ingrédients disponibles
 ingredients_disponibles = ["Salade", "Tomate", "Oignons", "Fromage"]
 
 # Sauces disponibles
-sauces_disponibles = ["Mayonnaise", "Ketchup", "Algerienne","Samourai","Harissa", "BBQ"]
+sauces_disponibles = ["Mayonnaise", "Ketchup", "Algerienne", "Samourai", "Harissa", "BBQ"]
 
 # Protéines disponibles
 proteines_disponibles = ["Jambon", "Poulet"]
 
-# Interface utilisateur pour commander un sandwich
-def commande_sandwich():
-    st.title("Commander un Sandwich")
+placeholder = st.empty()
+# Affiche l'interface utilisateur ou l'interface administrateur selon le cas
+
+with placeholder.form("Commander un Sandwich"):
+    container =  st.container(border=False)
+    container.title("Commander un Sandwich")
 
     #Générer une clé unique pour chaque widget en utilisant une fonction de hachage
-    nom_key = hashlib.md5("Nom".encode()).hexdigest()
-    email_key = hashlib.md5("Email".encode()).hexdigest()
-    nom_sandwich_key = hashlib.md5("Nommme ton sandwich du turfu".encode()).hexdigest()
-    ingredients_key = hashlib.md5("ingredient_select".encode()).hexdigest()
-    sauces_key = hashlib.md5("sauces_select".encode()).hexdigest()
-    proteines_key = hashlib.md5("proteines_select".encode()).hexdigest()
+    nom_key_1 = hashlib.md5("Nom".encode()).hexdigest()
+    email_key_1 = hashlib.md5("Email".encode()).hexdigest()
+    nom_sandwich_key_1 = hashlib.md5("Nommme ton sandwich du turfu".encode()).hexdigest()
+    ingredients_key_1 = hashlib.md5("ingredient_select".encode()).hexdigest()
+    sauces_key_1 = hashlib.md5("sauces_select".encode()).hexdigest()
+    proteines_key_1 = hashlib.md5("proteines_select".encode()).hexdigest()
 
     # Saisie du nom et de l'email
-    nom = st.text_input("Nom", key=nom_key)
-    email = st.text_input("Email", key=email_key)
-    nom_sandwich = st.text_input("Nommme ton sandwich du turfu", key=nom_sandwich_key)
-
+    nom = container.text_input("Nom", key=nom_key_1, value="")
+    email = container.text_input("Email", key=email_key_1, value="")
+    nom_sandwich = container.text_input("Nommme ton sandwich du turfu", key=nom_sandwich_key_1, value="")
 
     # Sélection des ingrédients
-    ingredients_selectionnes = st.multiselect("Sélectionnez les ingrédients", ingredients_disponibles, key = ingredients_key)
+    ingredients_selectionnes = container.multiselect("Sélectionnez les ingrédients", ingredients_disponibles, key=ingredients_key_1, default=[])
 
     # Sélection des sauces
-    sauces_selectionnees = st.multiselect("Sélectionnez les sauces", sauces_disponibles, key = sauces_key)
+    sauces_selectionnees = container.multiselect("Sélectionnez les sauces", sauces_disponibles, key=sauces_key_1, default=[])
 
     # Sélection des protéines
-    proteines_selectionnees = st.selectbox("Sélectionnez les protéines", proteines_disponibles, key = proteines_key)
-
-    if st.button("Commander"):
+    proteines_selectionnees = container.selectbox("Sélectionnez les protéines", proteines_disponibles, key=proteines_key_1, index=0)
+    
+    commander_button = st.form_submit_button("Commander")
+    if commander_button:
         # Création de l'objet Client
         client = Client(nom, email)
 
@@ -67,48 +77,17 @@ def commande_sandwich():
         # Création de l'objet Commande avec le client et le sandwich
         commande = Commande(client, sandwich)
 
-        #Connexion a la BDD
-        conn = creer_connexion()
-
         # Insertion du client dans la base de données et récupération de son ID
-        id_client = inserer_client(conn, client.nom, client.email)
+        id_client = inserer_client(client.nom, client.email)
 
         # Construction de la liste d'ingrédients, de sauces et de protéines sous forme de chaînes de caractères séparées par des virgules
-        ingredients = ", ".join(ingredients_selectionnes)
         sauces = ", ".join(commande.sandwichs.sauces)
-        proteines = ", ".join(commande.sandwichs.ingredients)
+        ingredients = ", ".join(commande.sandwichs.ingredients)
 
         # Insertion de la commande de sandwich avec l'ID du client associé
-        inserer_commande_sandwich(conn, id_client, commande.sandwichs.nom, commande.sandwichs.proteine, sauces, proteines)
+        inserer_commande_sandwich(id_client, commande.sandwichs.nom, commande.sandwichs.proteine, sauces, ingredients)
+        success = True
 
-        st.success("Commande passée avec succès !")
-        
-        # # Envoyer un e-mail de confirmation
-        # destinataire = "adresse_email_utilisateur@example.com"
-        # sujet = "Confirmation de votre commande de sandwich"
-        # contenu = "Votre commande a été passée avec succès !"
-        # envoyer_email(destinataire, sujet, contenu)
-        
-        # Insérez votre logique de commande ici
-        st.experimental_rerun()
-
-# Interface administrateur pour terminer les commandes
-def admin_terminer_commandes():
-    st.title("Administration")
-
-    # Authentification de l'administrateur
-    if authentification():
-        # Bouton pour terminer les commandes
-        if st.button("Commandes terminées"):
-            # Met ici le code pour marquer toutes les commandes comme terminées dans la base de données
-            st.success("Toutes les commandes ont été marquées comme terminées.")
-    else:
-        st.error("Accès refusé.")
-
-# Affiche l'interface utilisateur ou l'interface administrateur selon le cas
-if st.sidebar.button("Mode Administrateur"):
-    admin_terminer_commandes()
-else:
-    commande_sandwich()
-# Affiche l'interface utilisateur pour commander un sandwich
-commande_sandwich()
+        placeholder.empty()
+if success:
+    no_more_to_show(client)

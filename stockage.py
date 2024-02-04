@@ -1,62 +1,52 @@
-import sqlite3
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
 
-def creer_connexion():
-    """Crée et retourne une connexion à la base de données."""
-    return sqlite3.connect('data/commands.db')
+# Check if Firebase app is already initialized
+if not firebase_admin._apps:
+    cred = credentials.Certificate("secrets/order-page-c92f2-firebase-adminsdk-e270q-2bea0532f9.json")
+    firebase_admin.initialize_app(cred)
 
-def creer_tables(conn):
-    """Crée les tables de la base de données si elles n'existent pas déjà."""
-    cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS clients (
-                        id INTEGER PRIMARY KEY,
-                        nom TEXT,
-                        email TEXT
-                    )''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS commandes_sandwichs (
-                        id INTEGER PRIMARY KEY,
-                        id_client INTEGER,
-                        nom_sandwich TEXT,
-                        proteine TEXT,
-                        sauces TEXT,
-                        ingredients TEXT,
-                        preparee INTEGER DEFAULT 0,
-                        FOREIGN KEY (id_client) REFERENCES clients (id)
-                    )''')
-    conn.commit()
+db = firestore.client()
 
-def inserer_client(conn, nom, email):
+
+def inserer_client(nom, email):
     """Insère un client dans la base de données."""
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO clients (nom, email) VALUES (?, ?)", (nom, email))
-    conn.commit()
-    # Récupère l'ID du client nouvellement inséré
-    id_client = cursor.lastrowid
-    return id_client
+    _,client_ref = db.collection('clients').add({
+        'nom': nom,
+        'email': email
+    })
+    print(type(client_ref))
+    print(client_ref)
+    print(f"Added document with id {client_ref.id}")
+    return client_ref.id
 
-def inserer_commande_sandwich(conn, id_client, nom_sandwich, proteine, sauces, ingredients):
+def inserer_commande_sandwich(id_client, nom_sandwich, proteine, sauces, ingredients):
     """Insère une commande de sandwich dans la base de données."""
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO commandes_sandwichs (id_client, nom_sandwich, proteine, sauces, ingredients) VALUES (?, ?, ?, ?, ?)",
-                   (id_client, nom_sandwich, proteine, sauces, ingredients))
-    conn.commit()
+    _,commande_ref = db.collection('commandes_sandwichs').add({
+        'id_client': id_client,
+        'nom_sandwich': nom_sandwich,
+        'proteine': proteine,
+        'sauces': sauces,
+        'ingredients': ingredients,
+        'preparee': False  # Firestore does not have boolean, so use False instead of 0
+    })
+    return commande_ref.id
 
-def marquer_commande_preparee(conn, id_commande):
+def marquer_commande_preparee(db,id_commande):
     """Marque une commande comme préparée dans la base de données."""
+    commande_ref = db.collection('commandes_sandwichs').document(id_commande)
+    commande_ref.update({
+        'preparee': True
+    })
 
-    cursor = conn.cursor()
-    cursor.execute("UPDATE commandes_sandwichs SET preparee = 1 WHERE id = ?", (id_commande,))
-    conn.commit()
-    conn.close()
 
 # Code de test pour vérifier le bon fonctionnement des fonctions
 if __name__ == "__main__":
-    conn = creer_connexion()
-    creer_tables(conn)
-    
+
     # Insertion d'un client
-    inserer_client(conn, "John Doe", "john@example.com")
+    inserer_client("John Doe", "john@example.com")
 
     # Insertion d'une commande de sandwich
-    inserer_commande_sandwich(conn, 1, "Jambon-Fromage", "Jambon", "Mayonnaise", "Salade, Tomate")
+    inserer_commande_sandwich( 1, "Jambon-Fromage", "Jambon", "Mayonnaise", "Salade, Tomate")
     
-    conn.close()
