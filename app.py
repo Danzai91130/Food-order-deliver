@@ -3,8 +3,22 @@ import streamlit as st
 from src.classes.commande import Commande
 from src.classes.client import Client
 from src.classes.sandwich import Sandwich
-from src.utils import envoyer_email
+from email_sender import send_order_email
 from stockage import inserer_commande_sandwich, inserer_client
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
+import ast
+
+# Convert the string to a dictionary
+db_creds = ast.literal_eval(st.secrets.db_credentials['json_credentials'])
+
+# Check if Firebase app is already initialized
+if not firebase_admin._apps:
+    cred = credentials.Certificate(db_creds)
+    firebase_admin.initialize_app(cred)
+
+db = firestore.client()
 
 
 # Initialize variables
@@ -78,14 +92,15 @@ with placeholder.form("Commander un Sandwich"):
         commande = Commande(client, sandwich)
 
         # Insertion du client dans la base de données et récupération de son ID
-        id_client = inserer_client(client.nom, client.email)
+        id_client = inserer_client(db,client.nom, client.email)
 
         # Construction de la liste d'ingrédients, de sauces et de protéines sous forme de chaînes de caractères séparées par des virgules
         sauces = ", ".join(commande.sandwichs.sauces)
         ingredients = ", ".join(commande.sandwichs.ingredients)
 
         # Insertion de la commande de sandwich avec l'ID du client associé
-        inserer_commande_sandwich(id_client, commande.sandwichs.nom, commande.sandwichs.proteine, sauces, ingredients)
+        inserer_commande_sandwich(db,id_client, commande.sandwichs.nom, commande.sandwichs.proteine, sauces, ingredients)
+        send_order_email(st.secrets.email_cred.address, st.secrets.email_cred.pwd, client, ingredients_selectionnes, sauces_selectionnees, [proteines_selectionnees])
         success = True
 
         placeholder.empty()

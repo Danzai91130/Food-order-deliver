@@ -1,8 +1,22 @@
 import streamlit as st
 import os
+import ast
 from PIL import Image  # Import PIL for image resizing
-from stockage import db, marquer_commande_preparee
+from stockage import marquer_commande_preparee
 from commandes import recuperer_details_commande
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
+
+# Convert the string to a dictionary
+db_creds = ast.literal_eval(st.secrets.db_credentials['json_credentials'])
+
+# Check if Firebase app is already initialized
+if not firebase_admin._apps:
+    cred = credentials.Certificate(db_creds)
+    firebase_admin.initialize_app(cred)
+
+db = firestore.client()
 
 # Function to resize images
 def resize_image(image_path, width=100, height=100):
