@@ -1,3 +1,4 @@
+from email.mime.image import MIMEImage
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -88,25 +89,20 @@ def send_order_email(sender_email: str, sender_pwd: str, client: Client, ingredi
     receiver_email = client.email
     subject = f"🥪 {client.nom}, votre sandwich Jeevapathai est en route ! 😎"
     
-    # Corps de l'e-mail
+    # Email body
     corps_email = f"""\
-    Cher {client.nom},
-
-    Nous sommes ravis de vous annoncer que votre commande de sandwich est en cours de préparation avec soin et amour ! 🥪❤️
-
-    Voici une description amusante de votre sandwich :
-    {description}
-
-    Notre équipe chez Jeevapathai a hâte que vous savouriez chaque bouchée ! 😋
-
-    Votre satisfaction est notre priorité absolue, et nous sommes toujours là pour nous assurer que vous avez une expérience délicieuse avec nous.
-
-    Merci d'avoir choisi Jeevapathai pour vos envies de sandwich ! 🙏
-
-    Cordialement,
-    L'équipe Pole service Jeevapathai
-
-    <img src="data/gifs/bien-joue.gif" alt="bien-joue.gif">
+    <html>
+    <body>
+        <p>Cher {client.nom},</p>
+        <p>Nous sommes ravis de vous annoncer que votre commande de sandwich est en cours de préparation avec soin et amour ! 🥪❤️</p>
+        <p>Voici une description amusante de votre sandwich :<br>{description}</p>
+        <p>Notre équipe chez Jeevapathai a hâte que vous savouriez chaque bouchée ! 😋</p>
+        <p>Votre satisfaction est notre priorité absolue, et nous sommes toujours là pour nous assurer que vous avez une expérience délicieuse avec nous.</p>
+        <p>Merci d'avoir choisi Jeevapathai pour vos envies de sandwich ! 🙏</p>
+        <p>Cordialement,<br>L'équipe Pole service Jeevapathai</p>
+        <img src="cid:bien_joue_gif">
+    </body>
+    </html>
     """
 
     # Création du message
@@ -116,8 +112,12 @@ def send_order_email(sender_email: str, sender_pwd: str, client: Client, ingredi
     message["Subject"] = subject
 
     # Ajout du corps du message
-    message.attach(MIMEText(corps_email, "plain"))
-
+    message.attach(MIMEText(corps_email, "html"))
+    # Open the image file
+    with open('data/gifs/bien-joue.gif', 'rb') as f:
+        img = MIMEImage(f.read())
+        img.add_header('Content-ID', '<bien_joue_gif>')
+        message.attach(img)
     # Connexion au serveur SMTP
     with smtplib.SMTP("smtp-mail.outlook.com", 587) as server:
         server.starttls()
