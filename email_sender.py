@@ -62,7 +62,7 @@ def send_order_email(sender_email: str, sender_pwd: str, client: Client, ingredi
             elif sauce == "BBQ":
                 description += "    • 🍖♨️🔥🥩🥓🍳 La sauce BBQ, un festival de saveurs fumées et épicées ! Yeehaw ! 🤠\n"
             elif sauce == "Algerienne":
-                description += "    • 🇩🇿 L'harissa algérienne, une explosion de saveurs méditerranéennes ! Magnifique ! 🌊🌴\n"
+                description += "    • 🇩🇿 L'algérienne, une explosion de saveurs méditerranéennes ! Magnifique ! 🌊🌴\n"
             elif sauce == "Samourai":
                 description += "    • 🥷 La sauce Samouraï, tout comme un ninja, elle passe partout et vous surprendra avec son coup percutant ! 💥🥋\n"
 
@@ -100,7 +100,7 @@ def send_order_email(sender_email: str, sender_pwd: str, client: Client, ingredi
         <p>Votre satisfaction est notre priorité absolue, et nous sommes toujours là pour nous assurer que vous avez une expérience délicieuse avec nous.</p>
         <p>Merci d'avoir choisi Jeevapathai pour vos envies de sandwich ! 🙏</p>
         <p>Cordialement,<br>L'équipe Pole service Jeevapathai</p>
-        <img src="cid:bien_joue_gif">
+        <img src="cid:bien_joue_gif" width="100" height="70"> <!-- Adjust width and height as needed -->
     </body>
     </html>
     """
