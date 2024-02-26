@@ -105,8 +105,10 @@ def send_order_email(sender_email: str, sender_pwd: str, client: Client, ingredi
 
     Cordialement,
     L'équipe Pole service Jeevapathai
+
+    <img src="data/gifs/bien-joue.gif" alt="bien-joue.gif">
     """
-    
+
     # Création du message
     message = MIMEMultipart()
     message["From"] = sender_email
