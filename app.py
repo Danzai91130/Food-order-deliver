@@ -26,7 +26,7 @@ success = False
 def no_more_to_show(client):
     # Centered text
     st.write(f"<h1 style='text-align: center;'>\
-             Commande passée avec succès ! {client.nom} \
+             Commande passée avec succès ! 🎉 {client.nom} 🎉\
              L'équipe du pôle service de Jeevapathai te \
              remercie pour ta commande. Tu vas recevoir un email à l'adresse suivante: {client.email} </h1>", unsafe_allow_html=True)
 
