@@ -128,7 +128,17 @@ def analytics_page():
     most_common_ingredients, most_common_sauces, most_common_proteines = identify_most_common_combinations(orders)
     orders_per_day = analyze_order_trends_over_time(orders)
     customer_insights = analyze_customer_insights(orders)
-    avg_preparation_time = calculate_average_preparation_time(orders)
+    # Function to check if at least one document has 'preparee' field set to 'yes'
+    def check_if_preparee_exists():
+        try:
+            # Query Firestore to check if any document has 'preparee' field set to 'yes'
+            docs = db.collection("ycommandes_sandwichs").where("preparee", "==", "true").limit(1).get()
+            return len(docs) > 0
+        except Exception as e:
+            print("Error:", e)
+            return False
+    if check_if_preparee_exists():
+        avg_preparation_time = calculate_average_preparation_time(orders)
 
     # Display Analytics
     st.title("Analytics")
@@ -231,10 +241,10 @@ def analytics_page():
     st.subheader("Customer Insights:")
     customer_insights_df = pd.DataFrame(customer_insights, columns=['Customer ID', 'Order Count'])
     st.write(customer_insights_df)
-
-    # Average Preparation Time
-    st.subheader("Average Preparation Time:")
-    st.write(f"{avg_preparation_time} seconds")
+    if check_if_preparee_exists():
+        # Average Preparation Time
+        st.subheader("Average Preparation Time:")
+        st.write(f"{avg_preparation_time} seconds")
 
 # Main function to display the "Courses" page
 def courses_page():

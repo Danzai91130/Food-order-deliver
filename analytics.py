@@ -4,7 +4,7 @@ import datetime
 
 def get_all_orders(db):
     """Retrieve all orders from the database."""
-    orders_ref = db.collection('commandes_sandwichs').where('preparee', '==', True)
+    orders_ref = db.collection('commandes_sandwichs')
     orders = orders_ref.get()
 
     # Extract data from QuerySnapshot and convert to list of dictionaries
