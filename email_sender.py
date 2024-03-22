@@ -118,12 +118,20 @@ def send_order_email(sender_email: str, sender_pwd: str, client: Client, ingredi
         img = MIMEImage(f.read())
         img.add_header('Content-ID', '<bien_joue_gif>')
         message.attach(img)
-    # Connexion au serveur SMTP
-    with smtplib.SMTP("smtp-mail.outlook.com", 587) as server:
-        server.starttls()
-        server.login(sender_email, sender_pwd)
-        
-        # Envoi de l'e-mail
-        server.send_message(message)
+
+    try:
+        # Connexion au serveur SMTP
+        with smtplib.SMTP("smtp-mail.outlook.com", 587) as server:
+            server.starttls()
+            server.login(sender_email, sender_pwd)
+            
+            # Envoi de l'e-mail
+            server.send_message(message)
+
+        print("E-mail envoyé avec succès !")
+    except smtplib.SMTPDataError as e:
+        print("Erreur lors de l'envoi de l'e-mail:", e)
+        print("L'erreur a été ignorée.")
+
 
     print("E-mail envoyé avec succès !")
