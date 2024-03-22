@@ -123,7 +123,7 @@ def analytics_page():
     orders = get_all_orders(db)
 
     # Analyze orders
-    most_used_ingredients, most_used_sauces, most_used_proteines = analyze_orders(orders)
+    most_used_ingredients, most_used_sauces, most_used_proteines, ingredient_count, sauces_count, protein_count = analyze_orders(orders)
     avg_ingredients_per_order, avg_sauces_per_order, avg_proteines_per_order = calculate_average_order_size(orders)
     most_common_ingredients, most_common_sauces, most_common_proteines = identify_most_common_combinations(orders)
     orders_per_day = analyze_order_trends_over_time(orders)
@@ -236,10 +236,53 @@ def analytics_page():
     st.subheader("Average Preparation Time:")
     st.write(f"{avg_preparation_time} seconds")
 
+# Main function to display the "Courses" page
+def courses_page():
+    st.markdown("<h1 style='text-align: center; color: yellow;'>Courses</h1>", unsafe_allow_html=True)
+
+    # Retrieve all orders from Firestore
+    orders = get_all_orders(db)
+
+    # Aggregate counts of ingredients, proteins, and sauces
+    most_used_ingredients, most_used_sauces, most_used_proteines, ingredient_counts, proteines_counts, sauces_counts = analyze_orders(orders)
+    # Get image paths for ingredients, proteins, and sauces
+    ingredient_image_paths = get_image_paths("ingredients")
+    proteines_image_paths = get_image_paths("proteines")
+    sauces_image_paths = get_image_paths("sauces")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        # Display ingredient counts
+        st.subheader("Ingredients")
+        for ingredient, count in ingredient_counts.items():
+            caption = f"{ingredient}: {count}"
+            if ingredient.lower() in ingredient_image_paths.keys():
+                image = Image.open(ingredient_image_paths[ingredient.lower()])
+                st.image(image, caption=caption, width=100)
+
+    with col2:
+        # Display ingredient counts
+        st.subheader("Proteines")
+        for proteine, count in proteines_counts.items():
+            caption = f"{proteine}: {count}"
+            if proteine.lower() in proteines_image_paths.keys():
+                image = Image.open(proteines_image_paths[proteine.lower()])
+                st.image(image, caption=caption, width=100)
+
+    with col3:
+        # Display ingredient counts
+        st.subheader("Sauces")
+        for sauce, count in sauces_counts.items():
+            caption = f"{sauce}: {count}"
+            if sauce.lower() in sauces_image_paths.keys():
+                image = Image.open(sauces_image_paths[sauce.lower()])
+                st.image(image, caption=caption, width=100)
+
 # Sidebar navigation
-page = st.sidebar.radio("Navigation", ["Main", "Analytics"])
+page = st.sidebar.radio("Navigation", ["Main", "Analytics","Courses"])
 
 if page == "Main":
     main_page()
 elif page == "Analytics":
     analytics_page()
+elif page == "Courses":
+    courses_page()

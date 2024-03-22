@@ -31,7 +31,7 @@ def analyze_orders(orders):
     most_used_sauces = sorted(sauces_count.items(), key=lambda x: x[1], reverse=True)[:5]
     most_used_proteines = sorted(proteines_count.items(), key=lambda x: x[1], reverse=True)[:5]
 
-    return most_used_ingredients, most_used_sauces, most_used_proteines
+    return most_used_ingredients, most_used_sauces, most_used_proteines, ingredients_count, proteines_count, sauces_count
 
 def calculate_average_order_size(orders):
     """Calculate the average number of ingredients, sauces, and proteines per order."""

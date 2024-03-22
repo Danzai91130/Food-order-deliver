@@ -1,4 +1,6 @@
 import hashlib
+import random
+import re
 import streamlit as st
 from src.classes.commande import Commande
 from src.classes.client import Client
@@ -20,6 +22,10 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
+def validate_email(email):
+    # Regular expression for validating an email address
+    pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    return re.match(pattern, email)
 
 # Initialize variables
 success = False
@@ -29,13 +35,16 @@ def no_more_to_show(client):
              Commande passée avec succès ! 🎉 {client.nom} 🎉\
              L'équipe du pôle service de Jeevapathai te \
              remercie pour ta commande. Tu vas recevoir un email à l'adresse suivante: {client.email} </h1>", unsafe_allow_html=True)
-
+    # Define the upper limit for the random number (replace 100 with your desired upper limit)
+    upper_limit = 5
+    # Generate a random number between 1 and the upper limit
+    rdm = random.randint(1, upper_limit)
     # Centered GIF
     col1, col2, col3 = st.columns([1, 3, 1])  # Adjust column widths as needed
     with col1:
         st.write("")  # Add space for better centering
     with col2:
-        st.image("data/gifs/bien-joue.gif", use_column_width=True)
+        st.image(f"data/gifs/gif{rdm}.gif", use_column_width=True)
     with col3:
         st.write("")  # Add space for better centering
 
@@ -82,27 +91,30 @@ with placeholder.form("Commander un Sandwich"):
     
     commander_button = st.form_submit_button("Commander")
     if commander_button:
-        # Création de l'objet Client
-        client = Client(nom, email)
+        if validate_email(email):
+            # Création de l'objet Client
+            client = Client(nom, email)
 
-        # Création de l'objet Sandwich
-        sandwich = Sandwich(nom_sandwich, proteines_selectionnees, sauces_selectionnees, ingredients_selectionnes)
+            # Création de l'objet Sandwich
+            sandwich = Sandwich(nom_sandwich, proteines_selectionnees, sauces_selectionnees, ingredients_selectionnes)
 
-        # Création de l'objet Commande avec le client et le sandwich
-        commande = Commande(client, sandwich)
+            # Création de l'objet Commande avec le client et le sandwich
+            commande = Commande(client, sandwich)
 
-        # Insertion du client dans la base de données et récupération de son ID
-        id_client = inserer_client(db,client.nom, client.email)
+            # Insertion du client dans la base de données et récupération de son ID
+            id_client = inserer_client(db,client.nom, client.email)
 
-        # Construction de la liste d'ingrédients, de sauces et de protéines sous forme de chaînes de caractères séparées par des virgules
-        sauces = ", ".join(commande.sandwichs.sauces)
-        ingredients = ", ".join(commande.sandwichs.ingredients)
+            # Construction de la liste d'ingrédients, de sauces et de protéines sous forme de chaînes de caractères séparées par des virgules
+            sauces = ", ".join(commande.sandwichs.sauces)
+            ingredients = ", ".join(commande.sandwichs.ingredients)
 
-        # Insertion de la commande de sandwich avec l'ID du client associé
-        inserer_commande_sandwich(db,id_client, commande.sandwichs.nom, commande.sandwichs.proteine, sauces, ingredients)
-        send_order_email(st.secrets.email_cred.address, st.secrets.email_cred.pwd, client, ingredients_selectionnes, sauces_selectionnees, [proteines_selectionnees])
-        success = True
+            # Insertion de la commande de sandwich avec l'ID du client associé
+            inserer_commande_sandwich(db,id_client, commande.sandwichs.nom, commande.sandwichs.proteine, sauces, ingredients)
+            send_order_email(st.secrets.email_cred.address, st.secrets.email_cred.pwd, client, ingredients_selectionnes, sauces_selectionnees, [proteines_selectionnees])
+            success = True
 
-        placeholder.empty()
+            placeholder.empty()
+        else:
+            st.error("Veuillez rentrer une adresse mail valide svp.")
 if success:
     no_more_to_show(client)

@@ -35,7 +35,7 @@ def send_order_email(sender_email: str, sender_pwd: str, client: Client, ingredi
     
     # Gérer les ingrédients
     if ingredients:
-        description += "🍱 On commence par ajouter une bonne dose d'ingrédients zélément choisis'.\n"
+        description += "🍱 On commence par ajouter une bonne dose d'ingrédients 'zélément choisis'.\n"
         for ingredient in ingredients:
             if ingredient == "Salade":
                 description += "    • 🥬 La salade, pour une touche de fraîcheur et de croquant !\n"
