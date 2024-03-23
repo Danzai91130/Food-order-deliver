@@ -1,9 +1,23 @@
 from email.mime.image import MIMEImage
+import json
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import streamlit as st
+import requests
 
 from src.classes.client import Client
+
+def send_slack_notification(webhook_url, message):
+    payload = {
+        "text": message
+    }
+    response = requests.post(webhook_url, json=payload)
+
+    if response.status_code == 200:
+        print("Notification sent successfully!")
+    else:
+        print("Failed to send notification. Status code:", response.status_code)
 
 sauces_equivalents = {
 "Samourai": "🥷",
@@ -127,9 +141,10 @@ def send_order_email(sender_email: str, sender_pwd: str, client: Client, ingredi
             
             # Envoi de l'e-mail
             server.send_message(message)
-
+            send_slack_notification(st.secrets.slack_cred.webhook,f"{client.nom} a passé commande!:\n Avec ces ingrédients {ingredients}, \n Avec ces sauces:{sauces},\n \n Avec ces proteines {proteines}")
         print("E-mail envoyé avec succès !")
     except smtplib.SMTPDataError as e:
+        send_slack_notification(st.secrets.slack_cred.webhook,f"Erreur lors de l'envoi de l'e-mail:{e}, pour le client {client.nom} au mail {client.email})")
         print("Erreur lors de l'envoi de l'e-mail:", e)
         print("L'erreur a été ignorée.")
 
