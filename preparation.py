@@ -144,6 +144,10 @@ def analytics_page():
     st.title("Analytics")
 
     # Most Used Ingredients
+    st.subheader("Number of orders:")
+    st.write(f"We have {len(orders)} to prepare !")
+
+    # Most Used Ingredients
     st.subheader("Most Used Ingredients:")
     for ingredient, count in most_used_ingredients:
         st.write(f"{ingredient}: {count} times")
@@ -252,7 +256,9 @@ def courses_page():
 
     # Retrieve all orders from Firestore
     orders = get_all_orders(db)
-
+    # Most Used Ingredients
+    st.subheader("Number of orders:")
+    st.write(f"We have {len(orders)} to prepare !")
     # Aggregate counts of ingredients, proteins, and sauces
     most_used_ingredients, most_used_sauces, most_used_proteines, ingredient_counts, proteines_counts, sauces_counts = analyze_orders(orders)
     # Get image paths for ingredients, proteins, and sauces
