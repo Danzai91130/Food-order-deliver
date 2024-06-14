@@ -11,7 +11,52 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 import ast
+import base64
+@st.cache_data
+def get_img_as_base64(file):
+    with open(file, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
 
+
+img = get_img_as_base64("data/streamlit_data/background.jpg")
+
+page_bg_img = f"""
+<style>
+[data-testid="stAppViewContainer"] > .main {{
+background-image: url("https://i.pinimg.com/originals/f5/b3/d5/f5b3d5f92b3e330dd3bd787c1cf91aa3.jpg");
+background-size: 100%;
+background-position: top left;
+background-repeat: no-repeat;
+background-attachment: local;
+}}
+
+[data-testid="stSidebar"] > div:first-child {{
+background-image: url("data:image/png;base64,{img}");
+background-position: center; 
+background-repeat: no-repeat;
+background-attachment: fixed;
+}}
+[data-testid="stForm"] {{
+     background: #FFA07A;
+}}
+[data-testid="stCheckbox"] {{
+     background: #FFA07A;
+}}
+#commander-un-sandwich{{
+  text-align: center
+}}
+[data-testid="stHeader"] {{
+background: rgba(0,0,0,0);
+}}
+
+[data-testid="stToolbar"] {{
+right: 2rem;
+}}
+</style>
+"""
+
+st.markdown(page_bg_img, unsafe_allow_html=True)
 # Convert the string to a dictionary
 db_creds = ast.literal_eval(st.secrets.db_credentials['json_credentials'])
 
@@ -88,7 +133,7 @@ commande_enfant_key_1 = hashlib.md5("commande_enfant_checkbox".encode()).hexdige
 agree_box = st.empty()
 enfant_box = st.empty()
 # État de la case à cocher pour l'email
-agree = agree_box.checkbox('Je veux recevoir le récap de ma commande par mail 🚀',key=agree_key_1)
+agree = agree_box.checkbox('Je veux recevoir le récap de ma commande par mail🚀',key=agree_key_1)
 
 # État de la case à cocher pour l'email
 commande_enfant = enfant_box.checkbox("C'est pour un enfant 🧒👧",key=commande_enfant_key_1)
