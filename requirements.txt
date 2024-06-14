@@ -80,3 +80,6 @@ urllib3==2.2.0 ; python_version >= "3.8" and python_full_version != "3.9.7"
 validators==0.22.0 ; python_version >= "3.8" and python_full_version != "3.9.7"
 watchdog==3.0.0 ; python_version >= "3.8" and python_full_version != "3.9.7" and platform_system != "Darwin"
 zipp==3.17.0 ; python_version >= "3.8" and python_full_version != "3.9.7"
+plotly==5.19.0 ; python_version >= "3.8" and python_full_version != "3.9.7"
+
+
