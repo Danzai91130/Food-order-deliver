@@ -141,7 +141,7 @@ def send_order_email(sender_email: str, sender_pwd: str, client: Client, ingredi
             
             # Envoi de l'e-mail
             server.send_message(message)
-            send_slack_notification(st.secrets.slack_cred.webhook,f"{client.nom} a passé commande!:\n Avec ces ingrédients {ingredients}, \n Avec ces sauces:{sauces},\n \n Avec ces proteines {proteines}")
+            send_slack_notification(st.secrets.slack_cred.webhook,f"{client.nom} {client.prenom} a passé commande!:\n Avec ces ingrédients {ingredients}, \n Avec ces sauces:{sauces},\n \n Avec ces proteines {proteines}")
         print("E-mail envoyé avec succès !")
     except smtplib.SMTPDataError as e:
         send_slack_notification(st.secrets.slack_cred.webhook,f"Erreur lors de l'envoi de l'e-mail:{e}, pour le client {client.nom} au mail {client.email})")

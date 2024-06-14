@@ -1,8 +1,7 @@
 # src/classes/sandwich.py
 
 class Sandwich:
-    def __init__(self, nom, proteine, sauces=None, ingredients=None):
-        self.nom = nom
+    def __init__(self, proteine, sauces=None, ingredients=None):
         self.proteine = proteine
         self.sauces = sauces if sauces is not None else []
         self.ingredients = ingredients if ingredients is not None else []
@@ -12,6 +11,3 @@ class Sandwich:
 
     def ajouter_ingredient(self, ingredient):
         self.ingredients.append(ingredient)
-
-    def __str__(self):
-        return self.nom

@@ -13,6 +13,8 @@ import datetime
 from collections import Counter, defaultdict
 from firebase_admin import credentials
 from firebase_admin import firestore
+from google.cloud.firestore_v1.base_query import FieldFilter
+from google.cloud.firestore_v1 import aggregation
 
 # Function to get image paths for items
 def get_image_paths(category):
@@ -54,11 +56,11 @@ def main_page():
         if 'key' not in st.session_state:
             st.session_state['order-id'] = commande['id']
         st.title("Préparation de Commandes de Sandwichs")
-
-        # Affiche le titre de la commande
         st.header("Détails de la commande :")
         st.write(f"ID de la commande : {commande['id']}")
+        st.write(f"Commande_enfant: {commande['commande_enfant']}")
         st.write(f"Nom du client : {commande['nom_client']}")
+        st.write(f"Prénom du client : {commande['prenom_client']}")
         st.write(f"Email du client : {commande['email_client']}")
         col1, col2, col3 = st.columns(3)
 
@@ -128,15 +130,23 @@ def analytics_page():
     most_common_ingredients, most_common_sauces, most_common_proteines = identify_most_common_combinations(orders)
     orders_per_day = analyze_order_trends_over_time(orders)
     customer_insights = analyze_customer_insights(orders)
+
     # Function to check if at least one document has 'preparee' field set to 'yes'
     def check_if_preparee_exists():
         try:
-            # Query Firestore to check if any document has 'preparee' field set to 'yes'
-            docs = db.collection("ycommandes_sandwichs").where("preparee", "==", "true").limit(1).get()
-            return len(docs) > 0
+            query = db.collection("commandes_sandwichs").where(filter=FieldFilter("preparee", "==", True))
+            aggregate_query = aggregation.AggregationQuery(query)
+
+             # `alias` to provides a key for accessing the aggregate query results
+            aggregate_query.count(alias="all")
+            results = aggregate_query.get()
+
+            # If no document is found with 'preparee' field set to 'true', return False
+            return results[0][0].value > 0
         except Exception as e:
             print("Error:", e)
             return False
+        
     if check_if_preparee_exists():
         avg_preparation_time = calculate_average_preparation_time(orders)
 
@@ -147,26 +157,10 @@ def analytics_page():
     st.subheader("Number of orders:")
     st.write(f"We have {len(orders)} to prepare !")
 
-    # Most Used Ingredients
-    st.subheader("Most Used Ingredients:")
-    for ingredient, count in most_used_ingredients:
-        st.write(f"{ingredient}: {count} times")
-
-    # Most Used Sauces
-    st.subheader("Most Used Sauces:")
-    for sauce, count in most_used_sauces:
-        st.write(f"{sauce}: {count} times")
-
-    # Most Used Proteines
-    st.subheader("Most Used Proteines:")
-    for proteine, count in most_used_proteines:
-        st.write(f"{proteine}: {count} times")
-
     # Average Order Size
     st.subheader("Average Order Size:")
-    st.write(f"Avg. Ingredients per Order: {avg_ingredients_per_order}")
-    st.write(f"Avg. Sauces per Order: {avg_sauces_per_order}")
-    st.write(f"Avg. Proteines per Order: {avg_proteines_per_order}")
+    st.write(f"Avg. Ingredients per Order: {int(avg_ingredients_per_order)}")
+    st.write(f"Avg. Sauces per Order: {int(avg_sauces_per_order)}")
 
     # Most Common Combinations
     st.subheader("Most Common Combinations:")

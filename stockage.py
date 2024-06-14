@@ -2,9 +2,10 @@ from datetime import datetime
 
 from commandes import recuperer_details_commande
 
-def inserer_client(db, nom, email):
+def inserer_client(db, prenom, nom, email):
     """Insère un client dans la base de données."""
     _, client_ref = db.collection('clients').add({
+        'prenom': prenom,
         'nom': nom,
         'email': email
     })
@@ -13,17 +14,17 @@ def inserer_client(db, nom, email):
     print(f"Added document with id {client_ref.id}")
     return client_ref.id
 
-def inserer_commande_sandwich(db, id_client, nom_sandwich, proteine, sauces, ingredients):
+def inserer_commande_sandwich(db, id_client, proteine, sauces, ingredients,commande_enfant):
     """Insère une commande de sandwich dans la base de données."""
     placement_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     _, commande_ref = db.collection('commandes_sandwichs').add({
         'id_client': id_client,
-        'nom_sandwich': nom_sandwich,
         'proteine': proteine,
         'sauces': sauces,
         'ingredients': ingredients,
         'preparee': False,
-        'placement_time': placement_time
+        'placement_time': placement_time,
+        'commande_enfant': commande_enfant
     })
     return commande_ref.id
 
