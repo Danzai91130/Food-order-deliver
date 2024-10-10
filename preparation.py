@@ -62,6 +62,10 @@ def main_page():
         st.write(f"Nom du client : {commande['nom_client']}")
         st.write(f"Prénom du client : {commande['prenom_client']}")
         st.write(f"Email du client : {commande['email_client']}")
+        # Choix du texte selon la condition
+        texte_commandes = "Commandes enfants restantes" if commande['commande_enfant'] else "Commandes restantes"
+        st.write(f"{texte_commandes} : {commande['nombre_commandes_restantes']}")
+
         col1, col2, col3 = st.columns(3)
 
         commande_ingredients_str = commande['ingredients']

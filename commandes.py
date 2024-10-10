@@ -9,6 +9,9 @@ def recuperer_details_commande(db, non_prepares_seulement=False):
     if non_prepares_seulement:
         query_enfant = query_enfant.where('preparee', '==', False)
     commandes_enfant = query_enfant.limit(1).get()
+    commandes_enfant_nb = query_enfant.get()
+    # Count remaining commandes_enfant
+    nombre_commandes_enfant_restantes = len(commandes_enfant_nb)
 
     # Check if there are any orders with commande_enfant == True
     if commandes_enfant:
@@ -16,7 +19,7 @@ def recuperer_details_commande(db, non_prepares_seulement=False):
             commande_data = commande.to_dict()
             client_ref = db.collection('clients').document(commande_data['id_client'])
             client_data = client_ref.get().to_dict()
-            
+
             return {
                 'id': commande.id,
                 'nom_client': client_data['nom'],
@@ -25,14 +28,18 @@ def recuperer_details_commande(db, non_prepares_seulement=False):
                 'proteine': commande_data['proteine'],
                 'sauces': commande_data['sauces'],
                 'ingredients': commande_data['ingredients'],
-                'commande_enfant': commande_data['commande_enfant']
+                'commande_enfant': commande_data['commande_enfant'],
+                'nombre_commandes_restantes': nombre_commandes_enfant_restantes - 1  # Minus the one we're returning
             }
-    
+
     # If no commande_enfant == True, query for all orders
     query_nom = db.collection('commandes_sandwichs')
     if non_prepares_seulement:
         query_nom = query_nom.where('preparee', '==', False)
     commandes_nom = query_nom.get()
+
+    # Count remaining commandes_nom
+    nombre_commandes_nom_restantes = len(commandes_nom)
 
     commandes_nom_list = []
     # Get client information and append to commandes_nom_list
@@ -61,7 +68,8 @@ def recuperer_details_commande(db, non_prepares_seulement=False):
             'proteine': commande_data['proteine'],
             'sauces': commande_data['sauces'],
             'ingredients': commande_data['ingredients'],
-            'commande_enfant': commande_data['commande_enfant']
+            'commande_enfant': commande_data['commande_enfant'],
+            'nombre_commandes_restantes': nombre_commandes_nom_restantes - 1  # Minus the one we're returning
         }
 
     return None
