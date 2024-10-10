@@ -75,12 +75,15 @@ def validate_email(email):
 # Initialize variables
 success = False
 
-def no_more_to_show(client):
-    # Centered text
+def no_more_to_show(agree,client):
+
+    email_message = f" Tu vas recevoir un email à l'adresse suivante: {client.email}" if agree else ""
+    
+    # Afficher le message complet
     st.write(f"<h1 style='text-align: center;'>\
              Commande passée avec succès ! 🎉 {client.prenom} 🎉\
-             L'équipe du pôle service de Jeevapathai te \
-             remercie pour ta commande. Tu vas recevoir un email à l'adresse suivante: {client.email} </h1>", unsafe_allow_html=True)
+             L'équipe du pôle service de Jeevapathai te remercie pour ta commande.{email_message}</h1>", 
+             unsafe_allow_html=True)
     # Define the upper limit for the random number (replace 100 with your desired upper limit)
     upper_limit = 5
     # Generate a random number between 1 and the upper limit
@@ -212,4 +215,4 @@ with placeholder.form("Commander un Sandwich"):
         enfant_box.empty()
 
 if success:
-    no_more_to_show(client)
+    no_more_to_show(agree,client)
