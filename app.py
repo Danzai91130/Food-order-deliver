@@ -49,7 +49,16 @@ background-attachment: fixed;
 [data-testid="stHeader"] {{
 background: rgba(0,0,0,0);
 }}
-
+[data-testid="stFormSubmitButton"] {{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}}
+[data-testid="stButton"] {{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}}
 [data-testid="stToolbar"] {{
 right: 2rem;
 }}
@@ -99,6 +108,11 @@ def no_more_to_show(agree,client):
 
     # Clear session state to remove content from commande_sandwich function
     st.session_state.clear()
+
+    # Créer un bouton
+    if st.button('Commander à nouveau'):
+        # Rafraîchir la page lorsque le bouton est cliqué
+        st.experimental_rerun()
 
 # Ingrédients disponibles
 ingredients_disponibles = ["Salade", "Tomate", "Oignons", "Fromage"]
