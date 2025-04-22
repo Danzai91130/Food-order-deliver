@@ -54,6 +54,9 @@ def main_page():
     if commande:
         # Initialization
         if 'key' not in st.session_state:
+            if 'order_history' not in st.session_state:
+                st.session_state['order_history'] = []
+
             st.session_state['order-id'] = commande['id']
         st.title("Préparation de Commandes de Sandwichs")
         st.header("Détails de la commande :")
@@ -79,10 +82,12 @@ def main_page():
 
         with col1:
             st.subheader("Ingrédients :")
-            for ingredient in commande_ingredients:
-                image_path = os.path.join("data/ingredients", f"{ingredient.lower()}.jpeg")
-                resized_img = resize_image(image_path)
-                st.image(resized_img, width=100, caption=ingredient)
+            if commande_ingredients[0]!='':
+                print(commande_ingredients)
+                for ingredient in commande_ingredients:
+                    image_path = os.path.join("data/ingredients", f"{ingredient.lower()}.jpeg")
+                    resized_img = resize_image(image_path)
+                    st.image(resized_img, width=100, caption=ingredient)
 
         with col2:
             st.subheader("Sauces :")
@@ -99,11 +104,17 @@ def main_page():
                 st.image(resized_img, width=100, caption=proteine)
 
         # Bouton pour passer à la commande suivante
-        if st.button("Commande suivante",on_click=set_completion_time(db,st.session_state['order-id'])):
-            # # Set completion time for the current order
-            # set_completion_time(db, commande['id'])
-            # Marque la commande actuelle comme préparée dans la base de données
+        if st.button("Commande suivante"):
+            set_completion_time(db, st.session_state['order-id'])
             marquer_commande_preparee(db, commande["id"])
+            st.session_state['order_history'].append(st.session_state['order-id'])  # Ajoute l'ID dans l'historique
+            st.rerun()  # Recharge la page
+        if st.button("Commande précédente") and st.session_state['order_history']:
+            last_order_id = st.session_state['order_history'].pop()  # Supprime la dernière commande
+            st.session_state['order-id'] = last_order_id  # Remet l’ancienne
+            db.collection("commandes_sandwichs").document(last_order_id).update({"preparee": False})  # Marquer comme non préparée
+            st.rerun()
+
             # Bouton pour passer à la commande suivante
         if st.button("NON preparer tous"):
             # Marque la commande actuelle comme préparée dans la base de données
