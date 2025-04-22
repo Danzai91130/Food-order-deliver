@@ -25,10 +25,18 @@ page_bg_img = f"""
 <style>
 [data-testid="stAppViewContainer"] > .main {{
 background-image: url("https://i.pinimg.com/originals/f5/b3/d5/f5b3d5f92b3e330dd3bd787c1cf91aa3.jpg");
-background-size: 100%;
-background-position: top left;
+background-size: cover;
+background-position: center;
 background-repeat: no-repeat;
-background-attachment: local;
+background-attachment: fixed;
+}}
+
+@media (max-width: 768px) {{
+[data-testid="stAppViewContainer"] > .main {{
+    background-size: cover;
+    background-position: center center;
+    background-attachment: scroll;
+}}
 }}
 
 [data-testid="stSidebar"] > div:first-child {{
@@ -64,6 +72,7 @@ right: 2rem;
 }}
 </style>
 """
+
 st.markdown(page_bg_img, unsafe_allow_html=True)
 
 # Convert the string to a dictionary
